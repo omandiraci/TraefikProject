@@ -1,79 +1,94 @@
-# Traefik Projesi
+# 🚀 Traefik + WordPress + phpMyAdmin Docker Projesi
 
-Bu proje, Traefik reverse proxy kullanarak WordPress, MariaDB ve phpMyAdmin servislerini yöneten bir Docker Compose yapılandırması içerir.
+Bu proje, Docker kullanarak aşağıdaki servisleri içeren izole bir WordPress geliştirme ortamı oluşturur:
 
-## Özellikler
+* 🌐 **Traefik v2.5** (reverse proxy & load balancer)
+* 📝 **WordPress** (içerik yönetimi)
+* 🛢️ **MariaDB** (veritabanı)
+* 🛠️ **phpMyAdmin** (veritabanı yönetim arayüzü)
 
-- **Traefik v2.5**: Modern reverse proxy ve load balancer
-- **WordPress**: En son WordPress sürümü
-- **MariaDB 10.6**: Veritabanı sunucusu
-- **phpMyAdmin**: Veritabanı yönetim arayüzü
+## 📂 Proje Yapısı
 
-## Kurulum
+```
+TraefikProject/
+├── docker-compose.yml
+├── wordpress/               # WordPress verileri
+├── mysql-data/              # MariaDB verileri
+├── README.md
+└── Docker-Compose-Guide.md
+```
 
-1. Projeyi klonlayın:
-   ```bash
-   git clone https://github.com/omandiraci/TraefikProject.git
-   cd TraefikProject
-   ```
+## 🖼️ Mimarî
 
-2. Servisleri başlatın:
-   ```bash
-   docker-compose up -d
-   ```
+```
+    [Client Browser]
+          │
+          ▼
+     ┌──────────┐
+     │ Traefik  │ ◄──────────── Docker Socket
+     └──────────┘
+        │    │
+        ▼    ▼
+ ┌────────┐ ┌────────────┐
+ │ WordPress │ │ phpMyAdmin │
+ └────────┘ └────────────┘
+        │
+        ▼
+    ┌─────────┐
+    │ MariaDB │
+    └─────────┘
+```
 
-## Erişim Noktaları
+## ⚙️ Kurulum Adımları
 
-### Traefik Dashboard
-- URL: http://localhost:8080
-- Port: 8080
-- Açıklama: Traefik yönetim paneli
+1. **Depoyu Klonlayın:**
 
-### WordPress
-- Traefik üzerinden: http://localhost/wp
-- Doğrudan erişim: http://localhost:8081
-- Port: 8081
-- Açıklama: WordPress web sitesi
+```bash
+git clone https://github.com/omandiraci/TraefikProject.git
+cd TraefikProject
+```
 
-### phpMyAdmin
-- Traefik üzerinden: http://localhost/phpmyadmin
-- Doğrudan erişim: http://localhost:8082
-- Port: 8082
-- Açıklama: Veritabanı yönetim paneli
+2. **Servisleri Başlatın:**
 
-## Servis Detayları
+```bash
+docker-compose up -d
+```
 
-### Traefik
-- Port: 80 (HTTP), 443 (HTTPS), 8080 (Dashboard)
-- Docker provider aktif
-- Dashboard erişimi etkin
+3. **Servislere Erişim:**
 
-### WordPress
-- Port: 8081 (doğrudan erişim)
-- Traefik üzerinden: /wp path'i ile erişim
-- MariaDB ile entegre
+| Servis        | Adres                                                                |
+| ------------- | -------------------------------------------------------------------- |
+| WordPress     | [http://localhost:8081/wp](http://localhost:8081/wp)                 |
+| phpMyAdmin    | [http://localhost:8082/phpmyadmin](http://localhost:8082/phpmyadmin) |
+| Traefik Panel | [http://localhost:8080](http://localhost:8080)                       |
 
-### MariaDB
-- Veritabanı: wordpress_db
-- Kullanıcı: wordpress_user
-- Şifre: wordpress_password
+## 🔐 Varsayılan Bilgiler
 
-### phpMyAdmin
-- Port: 8082 (doğrudan erişim)
-- Traefik üzerinden: /phpmyadmin path'i ile erişim
-- Root erişimi mevcut
+**WordPress DB:**
 
-## Ağ Yapılandırması
+* Kullanıcı: `wordpress_user`
+* Şifre: `wordpress_password`
 
-- **proxy**: Traefik ve web servisleri için
-- **wordpress-network**: WordPress ve veritabanı servisleri için
+**phpMyAdmin:**
 
-## Güvenlik Notları
+* Kullanıcı: `root`
+* Şifre: `root_password`
 
-1. Üretim ortamında şifreleri değiştirin
-2. SSL sertifikalarını yapılandırın
-3. Güvenlik duvarı kurallarını gözden geçirin
+## 📦 Gereksinimler
 
-## Lisans
+* Docker
+* Docker Compose
 
-MIT 
+## 📤 Yayınlama
+
+Dosyaları GitHub'a göndermek için:
+
+```bash
+git add .
+git commit -m "İlk kurulum"
+git push -u origin main
+```
+
+## 📄 Lisans
+
+MIT Lisansı
