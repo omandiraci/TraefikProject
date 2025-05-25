@@ -1,0 +1,81 @@
+services:
+  traefik:
+    image: traefik:v2.5
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+    networks:
+      - proxy
+
+  wordpress:
+    image: wordpress:latest
+    restart: always
+    ports:
+      - "8081:80"  # WordPress portu
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress_user
+      WORDPRESS_DB_PASSWORD: wordpress_password
+      WORDPRESS_DB_NAME: wordpress_db
+    volumes:
+      - ./wordpress:/var/www/html
+    networks:
+      - wordpress-network
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wordpress.rule=PathPrefix(`/wp`)"
+      - "traefik.http.routers.wordpress.entrypoints=web"
+      - "traefik.http.services.wordpress.loadbalancer.server.port=80"
+
+  db:
+    image: mariadb:10.6
+    container_name: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: wordpress_db
+      MYSQL_USER: wordpress_user
+      MYSQL_PASSWORD: wordpress_password
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    networks:
+      - wordpress-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - "8082:80"  # phpMyAdmin erişimi
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root_password
+    depends_on:
+      - db
+    networks:
+      - wordpress-network
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.phpmyadmin.rule=PathPrefix(`/phpmyadmin`)"
+      - "traefik.http.routers.phpmyadmin.entrypoints=web"
+      - "traefik.http.services.phpmyadmin.loadbalancer.server.port=80"
+
+networks:
+  wordpress-network:
+    driver: bridge
+  proxy:
+    driver: bridge
